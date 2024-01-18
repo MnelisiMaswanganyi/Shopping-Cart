@@ -1,12 +1,15 @@
+// Retrieve or initialize the shopping cart from local storage
 let productsInCart = JSON.parse(localStorage.getItem('shoppingCart'));
-if(!productsInCart){
+if (!productsInCart) {
 	productsInCart = [];
 }
+
+// Select DOM elements
 const parentElement = document.querySelector('#buyItems');
 const cartSumPrice = document.querySelector('#sum-prices');
 const products = document.querySelectorAll('.product-under');
 
-
+// Calculate the total sum of prices in the shopping cart
 const countTheSumPrice = function () { // 4
 	let sum = 0;
 	productsInCart.forEach(item => {
@@ -15,9 +18,14 @@ const countTheSumPrice = function () { // 4
 	return sum;
 }
 
+// Update the HTML representation of the shopping cart
 const updateShoppingCartHTML = function () {  // 3
+	// Store the shopping cart in local storage
 	localStorage.setItem('shoppingCart', JSON.stringify(productsInCart));
+
+	// Check if the shopping cart is not empty
 	if (productsInCart.length > 0) {
+		// Generate HTML for each product in the cart
 		let result = productsInCart.map(product => {
 			return `
 				<li class="buyItem">
@@ -31,20 +39,22 @@ const updateShoppingCartHTML = function () {  // 3
 							<button class="button-plus" data-id=${product.id}>+</button>
 						</div>
 					</div>
-				</li>`
+				</li>`;
 		});
+
+		// Update the HTML of the shopping cart
 		parentElement.innerHTML = result.join('');
 		document.querySelector('.checkout').classList.remove('hidden');
 		cartSumPrice.innerHTML = 'R' + countTheSumPrice();
-
-	}
-	else {
+	} else {
+		// Display a message when the shopping cart is empty
 		document.querySelector('.checkout').classList.add('hidden');
 		parentElement.innerHTML = '<h4 class="empty">Your shopping cart is empty</h4>';
 		cartSumPrice.innerHTML = '';
 	}
 }
 
+// Update the quantity and price of a product in the shopping cart
 function updateProductsInCart(product) { // 2
 	for (let i = 0; i < productsInCart.length; i++) {
 		if (productsInCart[i].id == product.id) {
@@ -53,51 +63,8 @@ function updateProductsInCart(product) { // 2
 			return;
 		}
 	}
+	// If the product is not in the cart, add it
 	productsInCart.push(product);
 }
 
-products.forEach(item => {   // 1
-	item.addEventListener('click', (e) => {
-		if (e.target.classList.contains('addToCart')) {
-			const productID = e.target.dataset.productId;
-			const productName = item.querySelector('.productName').innerHTML;
-			const productPrice = item.querySelector('.priceValue').innerHTML;
-			const productImage = item.querySelector('img').src;
-			let product = {
-				name: productName,
-				image: productImage,
-				id: productID,
-				count: 1,
-				price: +productPrice,
-				basePrice: +productPrice,
-			}
-			updateProductsInCart(product);
-			updateShoppingCartHTML();
-		}
-	});
-});
-
-parentElement.addEventListener('click', (e) => { // Last
-	const isPlusButton = e.target.classList.contains('button-plus');
-	const isMinusButton = e.target.classList.contains('button-minus');
-	if (isPlusButton || isMinusButton) {
-		for (let i = 0; i < productsInCart.length; i++) {
-			if (productsInCart[i].id == e.target.dataset.id) {
-				if (isPlusButton) {
-					productsInCart[i].count += 1
-				}
-				else if (isMinusButton) {
-					productsInCart[i].count -= 1
-				}
-				productsInCart[i].price = productsInCart[i].basePrice * productsInCart[i].count;
-
-			}
-			if (productsInCart[i].count <= 0) {
-				productsInCart.splice(i, 1);
-			}
-		}
-		updateShoppingCartHTML();
-	}
-});
-
-updateShoppingCartHTML();
+// Add click event listeners to each product for adding to the cart
